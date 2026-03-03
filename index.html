@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>பிறப்பு & இறப்பு பதிவேடு</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@latest/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Noto Sans Tamil', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #4CAF50;
+            --secondary: #D32F2F;
+            --secondary-light: #F44336;
+            --accent: #FF9800;
+            --info: #2196F3;
+            --light-bg: #F5F5F5;
+            --card-bg: #FFFFFF;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        h1 .tamil {
+            font-size: 2rem;
+            display: block;
+            margin-top: 10px;
+            color: #FFEB3B;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        /* Language Toggle */
+        .lang-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-bottom: 2px solid #eee;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 20px 15px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            color: var(--text-light);
+            border-bottom: 3px solid transparent;
+            min-width: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tab:hover {
+            background: #f9f9f9;
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            background: #f0f9f0;
+        }
+
+        /* Form Container */
+        .form-container {
+            display: none;
+            padding: 30px;
+        }
+
+        .form-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .form-title {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .form-title i {
+            background: var(--primary-light);
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        .required::after {
+            content: " *";
+            color: red;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .input-row > div {
+            flex: 1;
+        }
+
+        /* Button Styles */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 160px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(90deg, var(--secondary) 0%, var(--secondary-light) 100%);
+            color: white;
+        }
+
+        .btn-accent {
+            background: linear-gradient(90deg, #FF9800 0%, #FFB74D 100%);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(90deg, var(--info) 0%, #64B5F6 100%);
+            color: white;
+        }
+
+        .btn-whatsapp {
+            background: linear-gradient(90deg, #25D366 0%, #128C7E 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(90deg, #388E3C 0%, #66BB6A 100%);
+            color: white;
+        }
+
+        /* Records Section */
+        .records-container {
+            padding: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .section-title {
+            color: var(--primary);
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title i {
+            color: var(--primary-light);
+        }
+
+        /* Stats Cards */
+        .stats-cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .count {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .stat-birth .count {
+            color: var(--primary);
+        }
+
+        .stat-death .count {
+            color: var(--secondary);
+        }
+
+        .stat-total .count {
+            color: var(--info);
+        }
+
+        /* Date Filter */
+        .filter-bar {
+            background: #F5F5F5;
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 25px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Records Table */
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .records-table th {
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .records-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .records-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-birth {
+            background: #E8F5E9;
+            color: var(--primary);
+        }
+
+        .badge-death {
+            background: #FFEBEE;
+            color: var(--secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .action-btn.pdf {
+            background: #FFECB3;
+            color: #FF8F00;
+        }
+
+        .action-btn.whatsapp {
+            background: #C8E6C9;
+            color: #2E7D32;
+        }
+
+        .action-btn.edit {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .action-btn.delete {
+            background: #FFCDD2;
+            color: #D32F2F;
+        }
+
+        /* Tools Section */
+        .tools-container {
+            padding: 30px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .tool-card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .tool-card h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #E8F5E9;
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+        }
+
+        .alert.error {
+            background: #FFEBEE;
+            color: var(--secondary);
+            border-left: 4px solid var(--secondary);
+        }
+
+        /* File Upload */
+        .file-upload-area {
+            border: 2px dashed #2196F3;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .file-upload-area:hover {
+            background: #E3F2FD;
+        }
+
+        .file-upload-area i {
+            font-size: 3rem;
+            color: #2196F3;
+            margin-bottom: 15px;
+        }
+
+        /* Certificate Styles */
+        .certificate {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            background: white;
+            border: 2px solid #000;
+            font-family: 'Noto Sans Tamil', 'Segoe UI', sans-serif;
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+        }
+
+        .certificate.birth {
+            border-color: #2E7D32;
+        }
+
+        .certificate.death {
+            border-color: #D32F2F;
+        }
+
+        .certificate-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px double #333;
+        }
+
+        .certificate-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .certificate-subtitle {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .certificate-body {
+            margin: 30px 0;
+        }
+
+        .certificate-row {
+            display: flex;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .certificate-label {
+            flex: 0 0 200px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .certificate-value {
+            flex: 1;
+            color: #000;
+        }
+
+        .certificate-footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #333;
+        }
+
+        .certificate-seal {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 20px;
+        }
+
+        /* Edit Mode Indicator */
+        .edit-mode-indicator {
+            background: #FFF3E0;
+            border: 2px solid #FF9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .edit-mode-indicator .edit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+            background: #f9f9f9;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                padding-top: 40px;
+            }
+            
+            h1 .tamil {
+                font-size: 1.4rem;
+            }
+            
+            .lang-toggle {
+                top: 15px;
+                right: 15px;
+                flex-direction: column;
+            }
+            
+            .tab {
+                min-width: 100%;
+                padding: 15px;
+            }
+            
+            .btn {
+                min-width: 100%;
+            }
+            
+            .input-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-cards {
+                flex-direction: column;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .certificate {
+                width: 100%;
+                padding: 10mm;
+            }
+            
+            .certificate-label {
+                flex: 0 0 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="lang-toggle">
+                <button class="lang-btn active" id="lang-ta">தமிழ்</button>
+                <button class="lang-btn" id="lang-en">English</button>
+            </div>
+            <h1>
+                பிறப்பு & இறப்பு பதிவேடு
+                <span class="tamil">Tamil Nadu Birth & Death Registry</span>
+            </h1>
+            <p class="subtitle" id="subtitle">பிறப்பு மற்றும் இறப்பு சான்றிதழ்களை மின்னணு முறையில் பதிவு செய்யும் முறை</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="tab active" data-tab="birth">
+                <i class="fas fa-baby"></i>
+                <span>பிறப்பு பதிவு</span>
+            </div>
+            <div class="tab" data-tab="death">
+                <i class="fas fa-cross"></i>
+                <span>இறப்பு பதிவு</span>
+            </div>
+            <div class="tab" data-tab="records">
+                <i class="fas fa-list"></i>
+                <span>தினசரி பதிவுகள்</span>
+            </div>
+            <div class="tab" data-tab="tools">
+                <i class="fas fa-tools"></i>
+                <span>கருவிகள்</span>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alert-message" class="alert" style="display: none;"></div>
+
+        <!-- Edit Mode Indicator -->
+        <div id="edit-mode-indicator" class="edit-mode-indicator" style="display: none;">
+            <div class="edit-header">
+                <div>
+                    <i class="fas fa-edit" style="color: #FF9800; margin-right: 10px;"></i>
+                    <strong id="edit-mode-title">பதிவு திருத்தல் முறையில் இருக்கிறீர்கள்</strong>
+                </div>
+                <button class="btn btn-success" id="save-edit-btn" style="padding: 8px 15px; font-size: 0.9rem;">
+                    <i class="fas fa-save"></i> திருத்தல் சேமிக்கவும்
+                </button>
+            </div>
+            <p id="edit-mode-details" style="margin: 0; font-size: 0.9rem;">
+                படிவத்தில் மாற்றங்களைச் செய்து "திருத்தல் சேமிக்கவும்" பொத்தானைக் கிளிக் செய்யவும்.
+            </p>
+        </div>
+
+        <!-- Birth Registration Form -->
+        <div id="birth-form" class="form-container active">
+            <h2 class="form-title"><i class="fas fa-baby-carriage"></i> பிறப்பு சான்றிதழ் படிவம்</h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="required">பெயர் (தமிழ்)</label>
+                    <input type="text" id="birth-name-ta" placeholder="முத்து பரணி ச">
+                </div>
+                <div class="form-group">
+                    <label class="required">பெயர் (ஆங்கிலம்)</label>
+                    <input type="text" id="birth-name-en" placeholder="MUTHU BARANI S">
+                </div>
+                <div class="form-group">
+                    <label class="required">பிறந்த தேதி</label>
+                    <input type="date" id="birth-dob">
+                </div>
+                <div class="form-group">
+                    <label class="required">பாலினம்</label>
+                    <select id="birth-gender">
+                        <option value="FEMALE">பெண்</option>
+                        <option value="MALE">ஆண்</option>
+                        <option value="OTHER">மற்றவை</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="required">தந்தை பெயர்</label>
+                    <input type="text" id="birth-father" placeholder="சங்கர் முருகன் / SANKAR MURUGAN">
+                </div>
+                <div class="form-group">
+                    <label class="required">தாய் பெயர்</label>
+                    <input type="text" id="birth-mother" placeholder="இ விஜி / E VIJI">
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="required">முகவரி</label>
+                    <textarea id="birth-address" placeholder="268B, GEORGE ROAD, NEW COLONY, THOOTHUKUDI, TAMIL NADU-628003"></textarea>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary" id="save-birth">
+                    <i class="fas fa-save"></i> பதிவு செய்க
+                </button>
+                <button class="btn btn-secondary" id="generate-birth-pdf">
+                    <i class="fas fa-file-pdf"></i> PDF உருவாக்கு
+                </button>
+                <button class="btn btn-whatsapp" id="share-birth-whatsapp">
+                    <i class="fab fa-whatsapp"></i> WhatsApp-ல் பகிர்
+                </button>
+                <button class="btn btn-accent" id="clear-birth">
+                    <i class="fas fa-broom"></i> படிவம் துடைக்க
+                </button>
+            </div>
+        </div>
+
+        <!-- Death Registration Form -->
+        <div id="death-form" class="form-container">
+            <h2 class="form-title"><i class="fas fa-cross"></i> இறப்பு சான்றிதழ் படிவம்</h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="required">பெயர் (தமிழ்)</label>
+                    <input type="text" id="death-name-ta" placeholder="இறந்தவர் பெயர் தமிழ்">
+                </div>
+                <div class="form-group">
+                    <label class="required">பெயர் (ஆங்கிலம்)</label>
+                    <input type="text" id="death-name-en" placeholder="இறந்தவர் பெயர் ஆங்கிலம்">
+                </div>
+                <div class="input-row">
+                    <div class="form-group">
+                        <label class="required">வயது</label>
+                        <input type="number" id="death-age" placeholder="வயது" min="0" max="150">
+                    </div>
+                    <div class="form-group">
+                        <label class="required">இறந்த தேதி</label>
+                        <input type="date" id="death-dod">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="required">பாலினம்</label>
+                    <select id="death-gender">
+                        <option value="MALE">ஆண்</option>
+                        <option value="FEMALE">பெண்</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="required">தந்தை பெயர்</label>
+                    <input type="text" id="death-father" placeholder="தமிழ் / ENGLISH">
+                </div>
+                <div class="form-group">
+                    <label class="required">தாய் பெயர்</label>
+                    <input type="text" id="death-mother" placeholder="தமிழ் / ENGLISH">
+                </div>
+                <div class="form-group">
+                    <label>மனைவி பெயர்</label>
+                    <input type="text" id="death-wife" placeholder="தமிழ் / ENGLISH">
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="required">முகவரி</label>
+                    <textarea id="death-address" placeholder="2/36, SOUTH STREET, PUTHUR PANDIYAPURAM, THOOTHUKUDI- 628002"></textarea>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary" id="save-death">
+                    <i class="fas fa-save"></i> பதிவு செய்க
+                </button>
+                <button class="btn btn-secondary" id="generate-death-pdf">
+                    <i class="fas fa-file-pdf"></i> PDF உருவாக்கு
+                </button>
+                <button class="btn btn-whatsapp" id="share-death-whatsapp">
+                    <i class="fab fa-whatsapp"></i> WhatsApp-ல் பகிர்
+                </button>
+                <button class="btn btn-accent" id="clear-death">
+                    <i class="fas fa-broom"></i> படிவம் துடைக்க
+                </button>
+            </div>
+        </div>
+
+        <!-- Records Section -->
+        <div id="records-container" class="form-container">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-calendar-day"></i> தினசரி பதிவுகள்</h2>
+                <div>
+                    <button class="btn btn-info" id="export-all-json">
+                        <i class="fas fa-download"></i> அனைத்தும் எக்ஸ்போர்ட்
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats-cards">
+                <div class="stat-card stat-birth">
+                    <h3>மொத்த பிறப்பு பதிவுகள்</h3>
+                    <div class="count" id="stats-birth">0</div>
+                </div>
+                <div class="stat-card stat-death">
+                    <h3>மொத்த இறப்பு பதிவுகள்</h3>
+                    <div class="count" id="stats-death">0</div>
+                </div>
+                <div class="stat-card stat-total">
+                    <h3>மொத்த பதிவுகள்</h3>
+                    <div class="count" id="stats-total">0</div>
+                </div>
+            </div>
+            
+            <!-- Filter -->
+            <div class="filter-bar">
+                <div>
+                    <label>தேதி தேர்வு:</label>
+                    <input type="date" id="filter-date">
+                </div>
+                <button class="btn btn-primary" id="show-all">
+                    <i class="fas fa-eye"></i> அனைத்தும் காட்டு
+                </button>
+                <button class="btn btn-secondary" id="export-all-pdf">
+                    <i class="fas fa-file-pdf"></i> PDF எக்ஸ்போர்ட்
+                </button>
+            </div>
+            
+            <!-- Records Table -->
+            <div id="records-table-container">
+                <p id="no-records">பதிவுகள் இதுவரை இல்லை. மேலே உள்ள படிவத்தில் பதிவு செய்யவும்.</p>
+                <table class="records-table" id="records-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>தேதி</th>
+                            <th>பெயர்</th>
+                            <th>வகை</th>
+                            <th>விபரம்</th>
+                            <th>செயல்கள்</th>
+                        </tr>
+                    </thead>
+                    <tbody id="records-tbody">
+                        <!-- Records will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tools Section -->
+        <div id="tools-container" class="form-container">
+            <h2 class="form-title"><i class="fas fa-tools"></i> தரவு மேலாண்மை கருவிகள்</h2>
+            
+            <div class="tools-grid">
+                <!-- Import/Export Card -->
+                <div class="tool-card">
+                    <h3><i class="fas fa-database"></i> தரவு இறக்குமதி & ஏற்றுமதி</h3>
+                    <div class="btn-group" style="margin-top: 20px;">
+                        <button class="btn btn-primary" id="export-data">
+                            <i class="fas fa-download"></i> தரவுகளை எக்ஸ்போர்ட் செய்க
+                        </button>
+                        <button class="btn btn-info" id="import-data">
+                            <i class="fas fa-upload"></i> தரவுகளை இறக்குமதி செய்க
+                        </button>
+                    </div>
+                    
+                    <div class="file-upload-area" id="file-upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h4>JSON கோப்பை இங்கே கிளிக் செய்யவும் அல்லது இழுக்கவும்</h4>
+                        <p>பிறப்பு மற்றும் இறப்பு பதிவுகளைக் கொண்ட JSON கோப்பு</p>
+                        <input type="file" id="import-file" accept=".json" style="display: none;">
+                    </div>
+                </div>
+                
+                <!-- PDF Generation Card -->
+                <div class="tool-card">
+                    <h3><i class="fas fa-file-pdf"></i> PDF உருவாக்கம்</h3>
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>பதிவு வகை தேர்வு</label>
+                        <select id="pdf-record-type">
+                            <option value="birth">பிறப்பு சான்றிதழ்</option>
+                            <option value="death">இறப்பு சான்றிதழ்</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>பதிவு தேர்வு</label>
+                        <select id="pdf-record-id">
+                            <option value="">தேர்வு செய்க</option>
+                        </select>
+                    </div>
+                    <div class="btn-group" style="margin-top: 20px;">
+                        <button class="btn btn-primary" id="generate-pdf">
+                            <i class="fas fa-file-pdf"></i> PDF உருவாக்கு
+                        </button>
+                        <button class="btn btn-whatsapp" id="share-pdf-whatsapp">
+                            <i class="fab fa-whatsapp"></i> WhatsApp-ல் பகிர்
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Data Management Card -->
+                <div class="tool-card">
+                    <h3><i class="fas fa-trash-alt"></i> தரவு மேலாண்மை</h3>
+                    <div class="btn-group" style="margin-top: 20px; flex-direction: column;">
+                        <button class="btn btn-secondary" id="clear-all-data">
+                            <i class="fas fa-trash"></i> அனைத்து பதிவுகளையும் நீக்கு
+                        </button>
+                        <button class="btn btn-accent" id="add-sample-data">
+                            <i class="fas fa-vial"></i> மாதிரி தரவுகளைச் சேர்க்கவும்
+                        </button>
+                        <button class="btn btn-info" id="print-records">
+                            <i class="fas fa-print"></i> அனைத்தையும் அச்சிடு
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer>
+            <p>© பிறப்பு & இறப்பு பதிவேடு முறை. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">
+                <i class="fas fa-phone"></i> தொடர்பு: 044-12345678 | 
+                <i class="fas fa-envelope"></i> மின்னஞ்சல்: registry@tn.gov.in
+            </p>
+        </footer>
+    </div>
+
+    <!-- Certificate Templates (Hidden) -->
+    <div id="certificate-template" style="display: none;">
+        <div class="certificate birth" id="birth-certificate">
+            <div class="certificate-header">
+                <div class="certificate-title">பிறப்பு சான்றிதழ்</div>
+                <div class="certificate-subtitle">Birth Certificate</div>
+                <div class="certificate-subtitle">விபரம் / Details</div>
+            </div>
+            
+            <div class="certificate-body">
+                <div class="certificate-row">
+                    <div class="certificate-label">வரிசை எண்:</div>
+                    <div class="certificate-value" id="bc-cert-no">TN/BR/2026/001</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">பெயர் (தமிழ்):</div>
+                    <div class="certificate-value" id="bc-name-ta">பெயர் தமிழ் </div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">பெயர் (ஆங்கிலம்):</div>
+                    <div class="certificate-value" id="bc-name-en">பெயர் ஆங்கிலம்</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">பிறந்த தேதி:</div>
+                    <div class="certificate-value" id="bc-dob">XXXX-XX-XX</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">பாலினம்:</div>
+                    <div class="certificate-value" id="bc-gender">பெண்</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">தந்தை பெயர்:</div>
+                    <div class="certificate-value" id="bc-father">தமிழ் / ஆங்கிலம்</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">தாய் பெயர்:</div>
+                    <div class="certificate-value" id="bc-mother">தமிழ் / ஆங்கிலம்</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">முகவரி:</div>
+                    <div class="certificate-value" id="bc-address">முழு முகவரி தமிழ் / முழு முகவரி ஆங்கிலம் </div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">மனு செய்த தேதி:</div>
+                    <div class="certificate-value" id="bc-reg-date">2023-11-16</div>
+                </div>
+            </div>
+            
+            <div class="certificate-footer">
+                <div class="Registar Details">பதிவு விபரம்</div>
+                <div>------------------------------------------------------</div>
+                <div>பதிவு விபரங்களை சரிபார்த்துக்கொள்ளவும்</div>
+                <div>பிறப்பு & இறப்பு பதிவேடு</div>
+                <div>சிறந்த சேவை வழங்குவதே நோக்கம்</div>
+            </div>
+        </div>
+        
+        <div class="certificate death" id="death-certificate">
+            <div class="certificate-header">
+                <div class="certificate-title">இறப்பு சான்றிதழ்</div>
+                <div class="certificate-subtitle">Death Certificate</div>
+                <div class="certificate-subtitle">விபரம் / Details</div>
+            </div>
+            
+            <div class="certificate-body">
+                <div class="certificate-row">
+                    <div class="certificate-label">வரிசை எண்:</div>
+                    <div class="certificate-value" id="dc-cert-no">TN/DR/2026/001</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">பெயர் (தமிழ்):</div>
+                    <div class="certificate-value" id="dc-name-ta">இறந்தவர் பெயர் தமிழ்</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">பெயர் (ஆங்கிலம்):</div>
+                    <div class="certificate-value" id="dc-name-en">இறந்தவர் பெயர் ஆங்கிலம்</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">வயது:</div>
+                    <div class="certificate-value" id="dc-age">வயது</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">இறந்த தேதி:</div>
+                    <div class="certificate-value" id="dc-dod">XXXX-XX-XX</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">பாலினம்:</div>
+                    <div class="certificate-value" id="dc-gender">ஆண்</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">தந்தை பெயர்:</div>
+                    <div class="certificate-value" id="dc-father"> தமிழ் / ஆங்கிலம்</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">தாய் பெயர்:</div>
+                    <div class="certificate-value" id="dc-mother">தமிழ் / ஆங்கிலம்</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">மனைவி பெயர்:</div>
+                    <div class="certificate-value" id="dc-wife">-</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">முகவரி:</div>
+                    <div class="certificate-value" id="dc-address">முழு முகவரி தமிழ் / முழு முகவரி ஆங்கிலம்</div>
+                </div>
+                <div class="certificate-row">
+                    <div class="certificate-label">மனு செய்த தேதி:</div>
+                    <div class="certificate-value" id="dc-reg-date">2023-09-27</div>
+                </div>
+            </div>
+            
+            <div class="certificate-footer">
+                <div class="Registar Details">பதிவு விபரம்</div>
+                <div>------------------------------------------------------</div>
+                <div>பதிவு விபரங்களை சரிபார்த்துக்கொள்ளவும்</div>
+                <div>பிறப்பு & இறப்பு பதிவேடு</div>
+                <div>சிறந்த சேவை வழங்குவதே நோக்கம்</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ GLOBAL VARIABLES ============
+        let birthRecords = [];
+        let deathRecords = [];
+        let currentLanguage = 'ta';
+        let editingRecord = null; // { type: 'birth' or 'death', id: number }
+        
+        // ============ INITIALIZATION ============
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Page loaded - Initializing...");
+            
+            // Set today's date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('birth-dob').value = today;
+            document.getElementById('death-dod').value = today;
+            document.getElementById('filter-date').value = today;
+            
+            // Load data from localStorage
+            loadDataFromStorage();
+            
+            // Initialize event listeners
+            initializeEventListeners();
+            
+            // Update UI
+            updateStats();
+            updatePDFRecordList();
+            displayAllRecords();
+            
+            console.log("Initialization complete!");
+        });
+        
+        // ============ DATA MANAGEMENT ============
+        function loadDataFromStorage() {
+            try {
+                const storedBirth = localStorage.getItem('birthRecords');
+                const storedDeath = localStorage.getItem('deathRecords');
+                
+                if (storedBirth) {
+                    birthRecords = JSON.parse(storedBirth);
+                } else {
+                    birthRecords = [];
+                }
+                
+                if (storedDeath) {
+                    deathRecords = JSON.parse(storedDeath);
+                } else {
+                    deathRecords = [];
+                }
+                
+                console.log("Data loaded from storage:", { birth: birthRecords.length, death: deathRecords.length });
+            } catch (error) {
+                console.error("Error loading data:", error);
+                birthRecords = [];
+                deathRecords = [];
+            }
+        }
+        
+        function saveDataToStorage() {
+            try {
+                localStorage.setItem('birthRecords', JSON.stringify(birthRecords));
+                localStorage.setItem('deathRecords', JSON.stringify(deathRecords));
+                console.log("Data saved to storage");
+            } catch (error) {
+                console.error("Error saving data:", error);
+            }
+        }
+        
+        // ============ EVENT LISTENERS ============
+        function initializeEventListeners() {
+            console.log("Setting up event listeners...");
+            
+            // Language Toggle
+            document.getElementById('lang-ta').addEventListener('click', () => changeLanguage('ta'));
+            document.getElementById('lang-en').addEventListener('click', () => changeLanguage('en'));
+            
+            // Tab Navigation
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showTab(tabName);
+                });
+            });
+            
+            // Birth Form Buttons
+            document.getElementById('save-birth').addEventListener('click', saveBirthRecord);
+            document.getElementById('generate-birth-pdf').addEventListener('click', () => generateBirthPDF());
+            document.getElementById('share-birth-whatsapp').addEventListener('click', shareBirthViaWhatsApp);
+            document.getElementById('clear-birth').addEventListener('click', clearBirthForm);
+            
+            // Death Form Buttons
+            document.getElementById('save-death').addEventListener('click', saveDeathRecord);
+            document.getElementById('generate-death-pdf').addEventListener('click', () => generateDeathPDF());
+            document.getElementById('share-death-whatsapp').addEventListener('click', shareDeathViaWhatsApp);
+            document.getElementById('clear-death').addEventListener('click', clearDeathForm);
+            
+            // Records Section Buttons
+            document.getElementById('show-all').addEventListener('click', () => {
+                document.getElementById('filter-date').value = '';
+                displayAllRecords();
+            });
+            document.getElementById('export-all-pdf').addEventListener('click', exportAllToPDF);
+            document.getElementById('export-all-json').addEventListener('click', exportAllData);
+            document.getElementById('filter-date').addEventListener('change', filterRecordsByDate);
+            
+            // Tools Section Buttons
+            document.getElementById('export-data').addEventListener('click', exportAllData);
+            document.getElementById('import-data').addEventListener('click', () => document.getElementById('import-file').click());
+            document.getElementById('generate-pdf').addEventListener('click', generateSelectedPDF);
+            document.getElementById('share-pdf-whatsapp').addEventListener('click', shareSelectedViaWhatsApp);
+            document.getElementById('clear-all-data').addEventListener('click', clearAllData);
+            document.getElementById('add-sample-data').addEventListener('click', addSampleData);
+            document.getElementById('print-records').addEventListener('click', printAllRecords);
+            
+            // Edit Mode Save Button
+            document.getElementById('save-edit-btn').addEventListener('click', saveEdit);
+            
+            // File Upload
+            document.getElementById('file-upload-area').addEventListener('click', () => document.getElementById('import-file').click());
+            document.getElementById('import-file').addEventListener('change', handleFileImport);
+            
+            // Drag and Drop
+            const uploadArea = document.getElementById('file-upload-area');
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '#E3F2FD';
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '';
+                
+                const file = e.dataTransfer.files[0];
+                if (file && file.name.endsWith('.json')) {
+                    const input = document.getElementById('import-file');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    input.files = dataTransfer.files;
+                    
+                    // Trigger change event
+                    const event = new Event('change', { bubbles: true });
+                    input.dispatchEvent(event);
+                } else {
+                    showAlert('error', 'செல்லுபடியாகும் JSON கோப்பை மட்டும் இழுக்கவும்');
+                }
+            });
+            
+            console.log("Event listeners setup complete!");
+        }
+        
+        // ============ UTILITY FUNCTIONS ============
+        function showAlert(type, message) {
+            const alert = document.getElementById('alert-message');
+            alert.textContent = message;
+            alert.className = 'alert ' + type;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+        
+        function updateStats() {
+            document.getElementById('stats-birth').textContent = birthRecords.length;
+            document.getElementById('stats-death').textContent = deathRecords.length;
+            document.getElementById('stats-total').textContent = birthRecords.length + deathRecords.length;
+        }
+        
+        function updatePDFRecordList() {
+            const select = document.getElementById('pdf-record-id');
+            select.innerHTML = '<option value="">தேர்வு செய்க</option>';
+            
+            birthRecords.forEach(record => {
+                const option = document.createElement('option');
+                option.value = `birth-${record.id}`;
+                option.textContent = `[பிறப்பு] ${record.nameEN} - ${formatDate(record.dob)}`;
+                select.appendChild(option);
+            });
+            
+            deathRecords.forEach(record => {
+                const option = document.createElement('option');
+                option.value = `death-${record.id}`;
+                option.textContent = `[இறப்பு] ${record.nameEN} - ${formatDate(record.dod)}`;
+                select.appendChild(option);
+            });
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ta-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+        
+        function formatDateForPDF(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ta-IN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+        
+        // ============ TAB MANAGEMENT ============
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.form-container').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab').forEach(tabBtn => {
+                tabBtn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const tabElement = document.getElementById(tabName + '-form') || 
+                               document.getElementById(tabName + '-container');
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
+            
+            // Add active class to clicked tab button
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Update content based on tab
+            if (tabName === 'records') {
+                displayAllRecords();
+            } else if (tabName === 'tools') {
+                updatePDFRecordList();
+            }
+        }
+        
+        // ============ LANGUAGE MANAGEMENT ============
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (lang === 'ta') {
+                document.getElementById('lang-ta').classList.add('active');
+                document.getElementById('subtitle').textContent = 'பிறப்பு மற்றும் இறப்பு சான்றிதழ்களை மின்னணு முறையில் பதிவு செய்யும் முறை';
+            } else {
+                document.getElementById('lang-en').classList.add('active');
+                document.getElementById('subtitle').textContent = 'Digital registration system for Birth and Death Certificates';
+            }
+        }
+        
+        // ============ BIRTH RECORD FUNCTIONS ============
+        function saveBirthRecord() {
+            console.log("Saving birth record...");
+            
+            const nameTA = document.getElementById('birth-name-ta').value.trim();
+            const nameEN = document.getElementById('birth-name-en').value.trim();
+            const dob = document.getElementById('birth-dob').value;
+            
+            if (!nameTA || !nameEN || !dob) {
+                showAlert('error', 'தயவு செய்து அனைத்து தேவையான தகவல்களையும் நிரப்பவும்');
+                return;
+            }
+            
+            const record = {
+                id: Date.now(),
+                nameTA: nameTA,
+                nameEN: nameEN,
+                dob: dob,
+                gender: document.getElementById('birth-gender').value,
+                father: document.getElementById('birth-father').value.trim(),
+                mother: document.getElementById('birth-mother').value.trim(),
+                address: document.getElementById('birth-address').value.trim(),
+                registrationDate: new Date().toISOString().split('T')[0],
+                timestamp: new Date().toISOString()
+            };
+            
+            birthRecords.push(record);
+            saveDataToStorage();
+            
+            showAlert('success', 'பிறப்பு பதிவு வெற்றிகரமாக சேமிக்கப்பட்டது!');
+            clearBirthForm();
+            updateStats();
+            displayAllRecords();
+            updatePDFRecordList();
+            
+            console.log("Birth record saved:", record);
+        }
+        
+        function clearBirthForm() {
+            document.getElementById('birth-name-ta').value = '';
+            document.getElementById('birth-name-en').value = '';
+            document.getElementById('birth-dob').value = new Date().toISOString().split('T')[0];
+            document.getElementById('birth-gender').value = 'FEMALE';
+            document.getElementById('birth-father').value = '';
+            document.getElementById('birth-mother').value = '';
+            document.getElementById('birth-address').value = '';
+        }
+        
+        // ============ DEATH RECORD FUNCTIONS ============
+        function saveDeathRecord() {
+            console.log("Saving death record...");
+            
+            const nameTA = document.getElementById('death-name-ta').value.trim();
+            const nameEN = document.getElementById('death-name-en').value.trim();
+            const age = document.getElementById('death-age').value;
+            const dod = document.getElementById('death-dod').value;
+            
+            if (!nameTA || !nameEN || !age || !dod) {
+                showAlert('error', 'தயவு செய்து அனைத்து தேவையான தகவல்களையும் நிரப்பவும்');
+                return;
+            }
+            
+            const record = {
+                id: Date.now(),
+                nameTA: nameTA,
+                nameEN: nameEN,
+                age: age,
+                dod: dod,
+                gender: document.getElementById('death-gender').value,
+                father: document.getElementById('death-father').value.trim(),
+                mother: document.getElementById('death-mother').value.trim(),
+                wife: document.getElementById('death-wife').value.trim(),
+                address: document.getElementById('death-address').value.trim(),
+                registrationDate: new Date().toISOString().split('T')[0],
+                timestamp: new Date().toISOString()
+            };
+            
+            deathRecords.push(record);
+            saveDataToStorage();
+            
+            showAlert('success', 'இறப்பு பதிவு வெற்றிகரமாக சேமிக்கப்பட்டது!');
+            clearDeathForm();
+            updateStats();
+            displayAllRecords();
+            updatePDFRecordList();
+            
+            console.log("Death record saved:", record);
+        }
+        
+        function clearDeathForm() {
+            document.getElementById('death-name-ta').value = '';
+            document.getElementById('death-name-en').value = '';
+            document.getElementById('death-age').value = '';
+            document.getElementById('death-dod').value = new Date().toISOString().split('T')[0];
+            document.getElementById('death-gender').value = 'MALE';
+            document.getElementById('death-father').value = '';
+            document.getElementById('death-mother').value = '';
+            document.getElementById('death-wife').value = '';
+            document.getElementById('death-address').value = '';
+        }
+        
+        // ============ RECORDS DISPLAY ============
+        function displayAllRecords(filterDate = null) {
+            const tbody = document.getElementById('records-tbody');
+            const noRecords = document.getElementById('no-records');
+            const table = document.getElementById('records-table');
+            
+            if (birthRecords.length === 0 && deathRecords.length === 0) {
+                noRecords.style.display = 'block';
+                table.style.display = 'none';
+                return;
+            }
+            
+            noRecords.style.display = 'none';
+            table.style.display = 'table';
+            tbody.innerHTML = '';
+            
+            // Combine and sort records
+            let allRecords = [];
+            
+            birthRecords.forEach(record => {
+                if (!filterDate || record.registrationDate === filterDate) {
+                    allRecords.push({
+                        ...record,
+                        type: 'birth',
+                        typeText: 'பிறப்பு',
+                        date: record.dob,
+                        details: `பெற்றோர்: ${record.father} & ${record.mother}`
+                    });
+                }
+            });
+            
+            deathRecords.forEach(record => {
+                if (!filterDate || record.registrationDate === filterDate) {
+                    allRecords.push({
+                        ...record,
+                        type: 'death',
+                        typeText: 'இறப்பு',
+                        date: record.dod,
+                        details: `வயது: ${record.age} | பெற்றோர்: ${record.father} & ${record.mother}`
+                    });
+                }
+            });
+            
+            // Sort by timestamp (newest first)
+            allRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            // Add rows to table
+            allRecords.forEach(record => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${formatDate(record.date)}</td>
+                    <td>
+                        <strong>${record.nameEN}</strong><br>
+                        <small>${record.nameTA}</small>
+                    </td>
+                    <td>
+                        <span class="badge ${record.type === 'birth' ? 'badge-birth' : 'badge-death'}">
+                            ${record.typeText}
+                        </span>
+                    </td>
+                    <td>${record.details}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn pdf" onclick="generateRecordPDF('${record.type}', ${record.id})">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="action-btn whatsapp" onclick="shareRecordViaWhatsApp('${record.type}', ${record.id})">
+                                <i class="fab fa-whatsapp"></i>
+                            </button>
+                            <button class="action-btn edit" onclick="editRecord('${record.type}', ${record.id})">
+                                <i class="fas fa-edit"></i> திருத்து
+                            </button>
+                            <button class="action-btn delete" onclick="deleteRecord('${record.type}', ${record.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        function filterRecordsByDate() {
+            const date = document.getElementById('filter-date').value;
+            displayAllRecords(date);
+        }
+        
+        function deleteRecord(type, id) {
+            if (!confirm('இந்த பதிவை நிச்சயமாக நீக்க வேண்டுமா?')) return;
+            
+            if (type === 'birth') {
+                birthRecords = birthRecords.filter(record => record.id !== id);
+            } else {
+                deathRecords = deathRecords.filter(record => record.id !== id);
+            }
+            
+            saveDataToStorage();
+            updateStats();
+            displayAllRecords();
+            updatePDFRecordList();
+            
+            showAlert('success', 'பதிவு வெற்றிகரமாக நீக்கப்பட்டது!');
+        }
+        
+        // ============ EDIT RECORD FUNCTIONS ============
+        function editRecord(type, id) {
+            console.log(`Editing ${type} record ${id}...`);
+            
+            let record;
+            if (type === 'birth') {
+                record = birthRecords.find(r => r.id === id);
+            } else {
+                record = deathRecords.find(r => r.id === id);
+            }
+            
+            if (!record) {
+                showAlert('error', 'பதிவு கிடைக்கவில்லை');
+                return;
+            }
+            
+            // Set editing mode
+            editingRecord = { type, id };
+            
+            // Populate form based on type
+            if (type === 'birth') {
+                // Show birth tab
+                showTab('birth');
+                
+                // Fill birth form
+                document.getElementById('birth-name-ta').value = record.nameTA;
+                document.getElementById('birth-name-en').value = record.nameEN;
+                document.getElementById('birth-dob').value = record.dob;
+                document.getElementById('birth-gender').value = record.gender;
+                document.getElementById('birth-father').value = record.father;
+                document.getElementById('birth-mother').value = record.mother;
+                document.getElementById('birth-address').value = record.address;
+                
+                // Change save button text
+                document.getElementById('save-birth').innerHTML = '<i class="fas fa-save"></i> புதுப்பிக்கவும்';
+                
+                // Update edit mode indicator
+                document.getElementById('edit-mode-title').textContent = 'பிறப்பு பதிவு திருத்தல்';
+                document.getElementById('edit-mode-details').textContent = `பெயர்: ${record.nameEN} | பிறந்த தேதி: ${formatDate(record.dob)}`;
+            } else {
+                // Show death tab
+                showTab('death');
+                
+                // Fill death form
+                document.getElementById('death-name-ta').value = record.nameTA;
+                document.getElementById('death-name-en').value = record.nameEN;
+                document.getElementById('death-age').value = record.age;
+                document.getElementById('death-dod').value = record.dod;
+                document.getElementById('death-gender').value = record.gender;
+                document.getElementById('death-father').value = record.father;
+                document.getElementById('death-mother').value = record.mother;
+                document.getElementById('death-wife').value = record.wife;
+                document.getElementById('death-address').value = record.address;
+                
+                // Change save button text
+                document.getElementById('save-death').innerHTML = '<i class="fas fa-save"></i> புதுப்பிக்கவும்';
+                
+                // Update edit mode indicator
+                document.getElementById('edit-mode-title').textContent = 'இறப்பு பதிவு திருத்தல்';
+                document.getElementById('edit-mode-details').textContent = `பெயர்: ${record.nameEN} | வயது: ${record.age} | இறந்த தேதி: ${formatDate(record.dod)}`;
+            }
+            
+            // Show edit mode indicator
+            document.getElementById('edit-mode-indicator').style.display = 'block';
+            
+            showAlert('info', 'திருத்தல் முறையில் இருக்கிறீர்கள். படிவத்தில் மாற்றங்களைச் செய்யவும்.');
+        }
+        
+        function saveEdit() {
+            if (!editingRecord) return;
+            
+            const { type, id } = editingRecord;
+            
+            if (type === 'birth') {
+                // Update birth record
+                const nameTA = document.getElementById('birth-name-ta').value.trim();
+                const nameEN = document.getElementById('birth-name-en').value.trim();
+                const dob = document.getElementById('birth-dob').value;
+                
+                if (!nameTA || !nameEN || !dob) {
+                    showAlert('error', 'தயவு செய்து அனைத்து தேவையான தகவல்களையும் நிரப்பவும்');
+                    return;
+                }
+                
+                const recordIndex = birthRecords.findIndex(r => r.id === id);
+                if (recordIndex !== -1) {
+                    birthRecords[recordIndex] = {
+                        ...birthRecords[recordIndex],
+                        nameTA: nameTA,
+                        nameEN: nameEN,
+                        dob: dob,
+                        gender: document.getElementById('birth-gender').value,
+                        father: document.getElementById('birth-father').value.trim(),
+                        mother: document.getElementById('birth-mother').value.trim(),
+                        address: document.getElementById('birth-address').value.trim(),
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    saveDataToStorage();
+                    showAlert('success', 'பிறப்பு பதிவு வெற்றிகரமாக புதுப்பிக்கப்பட்டது!');
+                }
+            } else {
+                // Update death record
+                const nameTA = document.getElementById('death-name-ta').value.trim();
+                const nameEN = document.getElementById('death-name-en').value.trim();
+                const age = document.getElementById('death-age').value;
+                const dod = document.getElementById('death-dod').value;
+                
+                if (!nameTA || !nameEN || !age || !dod) {
+                    showAlert('error', 'தயவு செய்து அனைத்து தேவையான தகவல்களையும் நிரப்பவும்');
+                    return;
+                }
+                
+                const recordIndex = deathRecords.findIndex(r => r.id === id);
+                if (recordIndex !== -1) {
+                    deathRecords[recordIndex] = {
+                        ...deathRecords[recordIndex],
+                        nameTA: nameTA,
+                        nameEN: nameEN,
+                        age: age,
+                        dod: dod,
+                        gender: document.getElementById('death-gender').value,
+                        father: document.getElementById('death-father').value.trim(),
+                        mother: document.getElementById('death-mother').value.trim(),
+                        wife: document.getElementById('death-wife').value.trim(),
+                        address: document.getElementById('death-address').value.trim(),
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    saveDataToStorage();
+                    showAlert('success', 'இறப்பு பதிவு வெற்றிகரமாக புதுப்பிக்கப்பட்டது!');
+                }
+            }
+            
+            // Reset edit mode
+            resetEditMode();
+            
+            // Update UI
+            updateStats();
+            displayAllRecords();
+            updatePDFRecordList();
+        }
+        
+        function resetEditMode() {
+            editingRecord = null;
+            
+            // Hide edit mode indicator
+            document.getElementById('edit-mode-indicator').style.display = 'none';
+            
+            // Reset save button texts
+            document.getElementById('save-birth').innerHTML = '<i class="fas fa-save"></i> பதிவு செய்க';
+            document.getElementById('save-death').innerHTML = '<i class="fas fa-save"></i> பதிவு செய்க';
+            
+            // Clear forms
+            clearBirthForm();
+            clearDeathForm();
+        }
+        
+        // ============ PDF GENERATION (USING HTML2CANVAS) ============
+        async function generateBirthPDF(record = null) {
+            console.log("Generating Birth PDF...");
+            
+            let nameTA, nameEN, dob, gender, father, mother, address;
+            let regDate = new Date().toISOString().split('T')[0];
+            
+            if (record) {
+                nameTA = record.nameTA;
+                nameEN = record.nameEN;
+                dob = record.dob;
+                gender = record.gender;
+                father = record.father;
+                mother = record.mother;
+                address = record.address;
+                regDate = record.registrationDate;
+            } else {
+                nameTA = document.getElementById('birth-name-ta').value || 'முத்து பரணி ச';
+                nameEN = document.getElementById('birth-name-en').value || 'MUTHU BARANI S';
+                dob = document.getElementById('birth-dob').value || new Date().toISOString().split('T')[0];
+                gender = document.getElementById('birth-gender').value || 'FEMALE';
+                father = document.getElementById('birth-father').value || 'சங்கர் முருகன் / SANKAR MURUGAN';
+                mother = document.getElementById('birth-mother').value || 'இ விஜி / E VIJI';
+                address = document.getElementById('birth-address').value || '268B, GEORGE ROAD, NEW COLONY, THOOTHUKUDI, TAMIL NADU-628003';
+            }
+            
+            // Get certificate template
+            const certTemplate = document.getElementById('birth-certificate').cloneNode(true);
+            
+            // Fill in the data
+            certTemplate.querySelector('#bc-cert-no').textContent = `TN/BR/${new Date().getFullYear()}/${String(birthRecords.length + 1).padStart(3, '0')}`;
+            certTemplate.querySelector('#bc-name-ta').textContent = nameTA;
+            certTemplate.querySelector('#bc-name-en').textContent = nameEN;
+            certTemplate.querySelector('#bc-dob').textContent = formatDateForPDF(dob);
+            certTemplate.querySelector('#bc-gender').textContent = gender === 'FEMALE' ? 'பெண்' : 'ஆண்';
+            certTemplate.querySelector('#bc-father').textContent = father;
+            certTemplate.querySelector('#bc-mother').textContent = mother;
+            certTemplate.querySelector('#bc-address').textContent = address;
+            certTemplate.querySelector('#bc-reg-date').textContent = formatDateForPDF(regDate);
+            
+            // Show the certificate temporarily
+            certTemplate.style.position = 'fixed';
+            certTemplate.style.left = '0';
+            certTemplate.style.top = '0';
+            certTemplate.style.width = '210mm';
+            certTemplate.style.minHeight = '297mm';
+            certTemplate.style.zIndex = '9999';
+            certTemplate.style.background = 'white';
+            document.body.appendChild(certTemplate);
+            
+            try {
+                // Generate PDF using html2canvas
+                const canvas = await html2canvas(certTemplate, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#FFFFFF'
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 210;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                
+                // Save PDF
+                const fileName = `பிறப்பு_சான்றிதழ்_${nameEN.replace(/\s+/g, '_')}.pdf`;
+                pdf.save(fileName);
+                
+                if (!record) {
+                    showAlert('success', 'பிறப்பு சான்றிதழ் PDF உருவாக்கப்பட்டது!');
+                }
+                
+                console.log("Birth PDF generated:", fileName);
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                showAlert('error', 'PDF உருவாக்கத்தில் பிழை: ' + error.message);
+            } finally {
+                // Remove the temporary certificate
+                document.body.removeChild(certTemplate);
+            }
+        }
+        
+        async function generateDeathPDF(record = null) {
+            console.log("Generating Death PDF...");
+            
+            let nameTA, nameEN, age, dod, gender, father, mother, wife, address;
+            let regDate = new Date().toISOString().split('T')[0];
+            
+            if (record) {
+                nameTA = record.nameTA;
+                nameEN = record.nameEN;
+                age = record.age;
+                dod = record.dod;
+                gender = record.gender;
+                father = record.father;
+                mother = record.mother;
+                wife = record.wife;
+                address = record.address;
+                regDate = record.registrationDate;
+            } else {
+                nameTA = document.getElementById('death-name-ta').value || 'தர்மராஜ் நாடார்';
+                nameEN = document.getElementById('death-name-en').value || 'DHARMARAJ NADAR';
+                age = document.getElementById('death-age').value || '60';
+                dod = document.getElementById('death-dod').value || new Date().toISOString().split('T')[0];
+                gender = document.getElementById('death-gender').value || 'MALE';
+                father = document.getElementById('death-father').value || 'சக்கரை நாடார் / SAKKARAI NADAR';
+                mother = document.getElementById('death-mother').value || 'ஆனந்தம்மாள் / ANANTHAMMAL';
+                wife = document.getElementById('death-wife').value || '-';
+                address = document.getElementById('death-address').value || '2/36, SOUTH STREET, PUTHUR PANDIYAPURAM, THOOTHUKUDI- 628002';
+            }
+            
+            // Get certificate template
+            const certTemplate = document.getElementById('death-certificate').cloneNode(true);
+            
+            // Fill in the data
+            certTemplate.querySelector('#dc-cert-no').textContent = `TN/DR/${new Date().getFullYear()}/${String(deathRecords.length + 1).padStart(3, '0')}`;
+            certTemplate.querySelector('#dc-name-ta').textContent = nameTA;
+            certTemplate.querySelector('#dc-name-en').textContent = nameEN;
+            certTemplate.querySelector('#dc-age').textContent = age;
+            certTemplate.querySelector('#dc-dod').textContent = formatDateForPDF(dod);
+            certTemplate.querySelector('#dc-gender').textContent = gender === 'MALE' ? 'ஆண்' : 'பெண்';
+            certTemplate.querySelector('#dc-father').textContent = father;
+            certTemplate.querySelector('#dc-mother').textContent = mother;
+            certTemplate.querySelector('#dc-wife').textContent = wife;
+            certTemplate.querySelector('#dc-address').textContent = address;
+            certTemplate.querySelector('#dc-reg-date').textContent = formatDateForPDF(regDate);
+            
+            // Show the certificate temporarily
+            certTemplate.style.position = 'fixed';
+            certTemplate.style.left = '0';
+            certTemplate.style.top = '0';
+            certTemplate.style.width = '210mm';
+            certTemplate.style.minHeight = '297mm';
+            certTemplate.style.zIndex = '9999';
+            certTemplate.style.background = 'white';
+            document.body.appendChild(certTemplate);
+            
+            try {
+                // Generate PDF using html2canvas
+                const canvas = await html2canvas(certTemplate, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#FFFFFF'
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 210;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                
+                // Save PDF
+                const fileName = `இறப்பு_சான்றிதழ்_${nameEN.replace(/\s+/g, '_')}.pdf`;
+                pdf.save(fileName);
+                
+                if (!record) {
+                    showAlert('success', 'இறப்பு சான்றிதழ் PDF உருவாக்கப்பட்டது!');
+                }
+                
+                console.log("Death PDF generated:", fileName);
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                showAlert('error', 'PDF உருவாக்கத்தில் பிழை: ' + error.message);
+            } finally {
+                // Remove the temporary certificate
+                document.body.removeChild(certTemplate);
+            }
+        }
+        
+        function generateRecordPDF(type, id) {
+            console.log(`Generating PDF for ${type} record ${id}...`);
+            
+            let record;
+            if (type === 'birth') {
+                record = birthRecords.find(r => r.id === id);
+                if (record) generateBirthPDF(record);
+            } else {
+                record = deathRecords.find(r => r.id === id);
+                if (record) generateDeathPDF(record);
+            }
+        }
+        
+        function generateSelectedPDF() {
+            const value = document.getElementById('pdf-record-id').value;
+            if (!value) {
+                showAlert('error', 'தயவு செய்து ஒரு பதிவைத் தேர்ந்தெடுக்கவும்');
+                return;
+            }
+            
+            const [type, id] = value.split('-');
+            generateRecordPDF(type, parseInt(id));
+        }
+        
+        // ============ WHATSAPP SHARING ============
+        function shareBirthViaWhatsApp() {
+            const nameEN = document.getElementById('birth-name-en').value || 'MUTHU BARANI S';
+            const dob = document.getElementById('birth-dob').value || new Date().toISOString().split('T')[0];
+            
+            const message = `பிறப்பு சான்றிதழ்: ${nameEN} - ${dob}`;
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+        
+        function shareDeathViaWhatsApp() {
+            const nameEN = document.getElementById('death-name-en').value || 'DHARMARAJ NADAR';
+            const dod = document.getElementById('death-dod').value || new Date().toISOString().split('T')[0];
+            
+            const message = `இறப்பு சான்றிதழ்: ${nameEN} - ${dod}`;
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+        
+        function shareRecordViaWhatsApp(type, id) {
+            let record, message;
+            
+            if (type === 'birth') {
+                record = birthRecords.find(r => r.id === id);
+                if (record) {
+                    message = `பிறப்பு சான்றிதழ்: ${record.nameEN} - ${record.dob}`;
+                }
+            } else {
+                record = deathRecords.find(r => r.id === id);
+                if (record) {
+                    message = `இறப்பு சான்றிதழ்: ${record.nameEN} - ${record.dod}`;
+                }
+            }
+            
+            if (message) {
+                const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                window.open(url, '_blank');
+            }
+        }
+        
+        function shareSelectedViaWhatsApp() {
+            const value = document.getElementById('pdf-record-id').value;
+            if (!value) {
+                showAlert('error', 'தயவு செய்து ஒரு பதிவைத் தேர்ந்தெடுக்கவும்');
+                return;
+            }
+            
+            const [type, id] = value.split('-');
+            shareRecordViaWhatsApp(type, parseInt(id));
+        }
+        
+        // ============ EXPORT/IMPORT FUNCTIONS ============
+        function exportAllData() {
+            console.log("Exporting all data...");
+            
+            const data = {
+                birthRecords: birthRecords,
+                deathRecords: deathRecords,
+                exportDate: new Date().toISOString(),
+                totalRecords: birthRecords.length + deathRecords.length
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
+            const fileName = `Birth_Death_Records_${new Date().toISOString().split('T')[0]}.json`;
+            
+            const link = document.createElement('a');
+            link.setAttribute('href', dataUri);
+            link.setAttribute('download', fileName);
+            link.click();
+            
+            showAlert('success', `அனைத்து தரவுகளும் JSON ஆக ஏற்றுமதி செய்யப்பட்டது! (${birthRecords.length + deathRecords.length} பதிவுகள்)`);
+        }
+        
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (!importedData.birthRecords || !importedData.deathRecords) {
+                        throw new Error('Invalid file format');
+                    }
+                    
+                    if (confirm(`இந்த கோப்பில் ${importedData.birthRecords.length} பிறப்பு பதிவுகள் மற்றும் ${importedData.deathRecords.length} இறப்பு பதிவுகள் உள்ளன. இறக்குமதி செய்ய வேண்டுமா?`)) {
+                        
+                        const merge = confirm('தற்போதைய தரவுடன் இணைக்க வேண்டுமா? (இல்லையெனில் மாற்றப்படும்)');
+                        
+                        if (merge) {
+                            // Merge with existing data
+                            importedData.birthRecords.forEach(record => {
+                                record.id = Date.now() + Math.random();
+                                birthRecords.push(record);
+                            });
+                            
+                            importedData.deathRecords.forEach(record => {
+                                record.id = Date.now() + Math.random();
+                                deathRecords.push(record);
+                            });
+                        } else {
+                            // Replace existing data
+                            birthRecords = importedData.birthRecords;
+                            deathRecords = importedData.deathRecords;
+                        }
+                        
+                        saveDataToStorage();
+                        updateStats();
+                        displayAllRecords();
+                        updatePDFRecordList();
+                        
+                        showAlert('success', `தரவு வெற்றிகரமாக இறக்குமதி செய்யப்பட்டது! மொத்தம் ${birthRecords.length + deathRecords.length} பதிவுகள்.`);
+                        
+                        console.log("Data imported successfully:", { 
+                            birth: birthRecords.length, 
+                            death: deathRecords.length 
+                        });
+                    }
+                } catch (error) {
+                    console.error("Import error:", error);
+                    showAlert('error', 'கோப்பைப் படிக்க முடியவில்லை. செல்லுபடியாகும் JSON கோப்பு என்பதை உறுதிப்படுத்தவும்.');
+                }
+                
+                // Reset file input
+                event.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function exportAllToPDF() {
+            console.log("Exporting all to PDF...");
+            
+            if (birthRecords.length === 0 && deathRecords.length === 0) {
+                showAlert('error', 'ஏற்றுமதி செய்ய பதிவுகள் இல்லை');
+                return;
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Title
+            doc.setFontSize(18);
+            doc.setTextColor(46, 125, 50);
+            doc.text('Birth and Death Records Report', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+            
+            let yPos = 40;
+            
+            // Birth Records
+            if (birthRecords.length > 0) {
+                doc.setFontSize(14);
+                doc.setTextColor(46, 125, 50);
+                doc.text(`Birth Records (${birthRecords.length})`, 14, yPos);
+                yPos += 10;
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                
+                birthRecords.forEach((record, index) => {
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.text(`${index + 1}. ${record.nameEN} (${record.nameTA})`, 14, yPos);
+                    doc.text(`   Date of Birth: ${record.dob} | Parents: ${record.father} & ${record.mother}`, 14, yPos + 5);
+                    yPos += 12;
+                });
+                
+                yPos += 10;
+            }
+            
+            // Death Records
+            if (deathRecords.length > 0) {
+                if (yPos > 250) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                doc.setFontSize(14);
+                doc.setTextColor(211, 47, 47);
+                doc.text(`Death Records (${deathRecords.length})`, 14, yPos);
+                yPos += 10;
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                
+                deathRecords.forEach((record, index) => {
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.text(`${index + 1}. ${record.nameEN} (${record.nameTA})`, 14, yPos);
+                    doc.text(`   Date of Death: ${record.dod} | Age: ${record.age} | Parents: ${record.father} & ${record.mother}`, 14, yPos + 5);
+                    yPos += 12;
+                });
+            }
+            
+            doc.save('All_Records_Report.pdf');
+            showAlert('success', 'அனைத்து பதிவுகளும் PDF ஆக ஏற்றுமதி செய்யப்பட்டது!');
+        }
+        
+        // ============ DATA MANAGEMENT FUNCTIONS ============
+        function clearAllData() {
+            if (!confirm('அனைத்து பதிவுகளையும் நிச்சயமாக நீக்க வேண்டுமா? இந்த செயலை திரும்ப பெற முடியாது!')) {
+                return;
+            }
+            
+            birthRecords = [];
+            deathRecords = [];
+            
+            localStorage.removeItem('birthRecords');
+            localStorage.removeItem('deathRecords');
+            
+            updateStats();
+            displayAllRecords();
+            updatePDFRecordList();
+            
+            showAlert('success', 'அனைத்து பதிவுகளும் நீக்கப்பட்டன!');
+        }
+        
+        function addSampleData() {
+            const sampleBirth = {
+                id: Date.now(),
+                nameTA: 'முத்து பரணி ச',
+                nameEN: 'MUTHU BARANI S',
+                dob: '2018-11-16',
+                gender: 'FEMALE',
+                father: 'சங்கர் முருகன் / SANKAR MURUGAN',
+                mother: 'இ விஜி / E VIJI',
+                address: '268B, GEORGE ROAD, NEW COLONY, THOOTHUKUDI, TAMIL NADU-628003',
+                registrationDate: '2018-11-16',
+                timestamp: '2018-11-16T00:00:00.000Z'
+            };
+            
+            const sampleDeath = {
+                id: Date.now() + 1,
+                nameTA: 'தர்மராஜ் நாடார்',
+                nameEN: 'DHARMARAJ NADAR',
+                age: '60',
+                dod: '1990-09-27',
+                gender: 'MALE',
+                father: 'சக்கரை நாடார் / SAKKARAI NADAR',
+                mother: 'ஆனந்தம்மாள் / ANANTHAMMAL',
+                wife: '-',
+                address: '2/36, SOUTH STREET, PUTHUR PANDIYAPURAM, THOOTHUKUDI- 628002',
+                registrationDate: '1990-09-27',
+                timestamp: '1990-09-27T00:00:00.000Z'
+            };
+            
+            birthRecords.push(sampleBirth);
+            deathRecords.push(sampleDeath);
+            
+            saveDataToStorage();
+            updateStats();
+            displayAllRecords();
+            updatePDFRecordList();
+            
+            showAlert('success', 'மாதிரி தரவுகள் சேர்க்கப்பட்டன!');
+        }
+        
+        function printAllRecords() {
+            window.print();
+        }
+        
+        // Make functions available globally for onclick attributes
+        window.generateRecordPDF = generateRecordPDF;
+        window.shareRecordViaWhatsApp = shareRecordViaWhatsApp;
+        window.editRecord = editRecord;
+        window.deleteRecord = deleteRecord;
+    </script>
+</body>
+</html>
